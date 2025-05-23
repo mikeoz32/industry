@@ -36,8 +36,11 @@ class User:
 
 
 class UserMutator:
+    def __call__(self, event: Any, state: Optional[Any]) -> Any:
+        return self.on(event, state)
+
     @singledispatchmethod
-    def on(event: Any, state: User): ...
+    def on(event: Any, state: Optional[Any]): ...
 
     @on.register()
     def _(event: UserRegisteredEvent, state: Optional[User]):
