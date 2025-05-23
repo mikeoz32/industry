@@ -7,7 +7,9 @@ authors = [
     { name = "Mike Oz", email = "kozloffsky@hotmal.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "pydantic>=2.11.5",
+]
 
 [project.scripts]
 industry = "industry:main"

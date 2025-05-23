@@ -1,11 +1,11 @@
-from dataclasses import dataclass
 from datetime import datetime
+
+from pydantic import BaseModel
 
 from industry.accounts.entity.user import UserId
 
 
-@dataclass(frozen=True)
-class UserRegisteredEvent:
+class UserRegisteredEvent(BaseModel, frozen=True):
     user_id: UserId
     identity_id: str
 
@@ -14,6 +14,5 @@ class UserRegisteredEvent:
     created_at: datetime
 
 
-@dataclass(frozen=True)
-class UserDisabledEvent:
+class UserDisabledEvent(BaseModel, frozen=True):
     user_id: UserId

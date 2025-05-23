@@ -1,10 +1,10 @@
+from typing import List, Optional
 from uuid import UUID, NAMESPACE_URL, uuid5
-from dataclasses import dataclass
 from datetime import datetime
+from pydantic import BaseModel, Field
 
 
-@dataclass()
-class UserId:
+class UserId(BaseModel, frozen=True):
     """
     User Id Value Object
     """
@@ -16,8 +16,18 @@ class UserId:
         return UserId(id=uuid5(NAMESPACE_URL, f"/users/{identity_id}"))
 
 
-@dataclass(frozen=True)
-class User:
+class UserFullName(BaseModel, frozen=True):
+    first_name: str
+    last_name: str
+
+
+class UserEducationEntry(BaseModel, frozen=True):
+    end_year: int
+    speciality: str
+    degree: str
+
+
+class User(BaseModel, frozen=True):
     """
     User root entity
     """
@@ -30,3 +40,8 @@ class User:
     nickname: str
     created_at: datetime
     disabled: bool = False
+
+    # User profile data
+    full_name: Optional[UserFullName] = None
+    bio: str = ""
+    education: List[UserEducationEntry] = Field(default_factory=list)
