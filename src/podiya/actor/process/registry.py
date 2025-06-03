@@ -1,3 +1,4 @@
+from typing import List
 from podiya.actor.process import context
 from podiya.actor.process.pid import PID
 from podiya.actor.process.process import Process
@@ -20,6 +21,9 @@ class ProcessRegistry:
 
     def get_named(self, name: str) -> Process:
         return self._named_processes.get(name, None)
+
+    def processes(self) -> List[Process]:
+        return self._local_processes.values()
 
 
 def get_process_regisrty() -> ProcessRegistry:

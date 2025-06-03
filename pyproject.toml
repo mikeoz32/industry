@@ -22,5 +22,10 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "pytest>=8.3.5",
+    "pytest-asyncio>=1.0.0",
     "ruff>=0.11.11",
 ]
+
+[tool.pytest.ini_options]
+addopts = "--capture=sys"
+asyncio_default_fixture_loop_scope = "function"

@@ -10,11 +10,14 @@ class MailBox:
     def __aiter__(self):
         return self
 
-    async def __anext__(self):
-        return await self._queue.get()
+    async def __anext__(self) -> Envelope:
+        try:
+            return await self._queue.get()
+        except asyncio.exceptions.CancelledError:
+            raise StopAsyncIteration()
 
     async def send(self, message: Envelope):
-        await self._queue.put(message)
+        self._queue.put_nowait(message)
 
     def terminate(self):
-        self._queue.shutdown(True)
+        self._queue.shutdown()

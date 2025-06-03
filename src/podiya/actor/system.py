@@ -5,6 +5,7 @@ from podiya.actor import process
 from podiya.actor.process.pid import PID
 from podiya.actor.process import call, context, receive, reply, send
 from podiya.actor.process import spawn
+from podiya.actor.process.process import Process
 from podiya.actor.process.registry import ProcessRegistry
 
 import asyncio
@@ -31,7 +32,12 @@ class Kernel:
 
     async def __call__(self) -> None: ...
 
-    async def __aexit__(self, a, b, c): ...
+    async def __aexit__(self, a, b, c):
+        registry: ProcessRegistry = context._process_regisrty.get()
+
+        for proc in registry.processes():
+            if proc.status == Process.Status.Running:
+                await proc.exit()
 
 
 S = TypeVar("ActorState")
@@ -78,8 +84,8 @@ async def hello():
     print(pid)
     async for message in process.receive():
         print("Incoming message for ping")
-        print(message.payload)
-        await send(message.sender, f"Ive got {message.payload}")
+        print(f"ping got {message.payload}")
+        await send(message.sender, f"ping")
 
 
 async def hello_sync(ping: PID):
@@ -89,7 +95,7 @@ async def hello_sync(ping: PID):
     await send(ping, "Hi from pong")
     async for message in process.receive():
         print("Incoming message for pong")
-        print(message.payload)
+        print(f"Pong got {message.payload}")
 
 
 async def server():
@@ -99,7 +105,7 @@ async def server():
 
 async def client(server_pid: PID):
     result = await call(server_pid, "Hi from client")
-    print(result)
+    print(f"Result :{result}")
 
 
 async def main():

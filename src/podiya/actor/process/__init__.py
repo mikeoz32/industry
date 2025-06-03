@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, AsyncIterable, Optional
 from uuid import UUID
 from podiya.actor.message import Envelope
 from podiya.actor.process import context
@@ -35,9 +35,11 @@ async def send(pid: PID, message: Any, correlation_id: Optional[UUID] = None):
     envelope = Envelope(sender, message, correlation_id=correlation_id)
     await proc.send(envelope)
 
+
 async def send_to_name(name: str, message: Any, correlation_id: Optional[UUID] = None):
     pid = whereis(name)
     return await send(pid, message, correlation_id)
+
 
 async def call(pid: PID, message: Any):
     proc = find_proc(pid)
@@ -50,20 +52,22 @@ async def call(pid: PID, message: Any):
     await proc.send(envelope)
     return await future
 
+
 async def call_to_name(name: str, message: Any):
     pid = whereis(name)
     return await call(pid, message)
+
 
 async def reply(message: Any, to: Envelope):
     await send(to.sender, message, to.correlation_id)
 
 
-def receive() -> Envelope:
+def receive() -> AsyncIterable[Envelope]:
     receiver = context._current_receive.get()
     return receiver
 
 
-def spawn(behavior):
+def spawn(behavior) -> PID:
     pid = PID()
     process = Process(behavior, pid)
     register_pid(pid, process)
@@ -81,4 +85,4 @@ def start(behavior, name):
 
 
 def monitor(pid: PID):
-    find_proc(pid).add_monitor(self())
+    find_proc(pid).add_monitor(find_proc(self()))
