@@ -50,6 +50,7 @@ async def call(pid: PID, message: Any):
     future = caller.create_future(envelope.correlation_id)
 
     await proc.send(envelope)
+    print("Calling")
     return await future
 
 

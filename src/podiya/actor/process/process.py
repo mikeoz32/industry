@@ -41,7 +41,7 @@ class Process:
         self._task = None
         self._system_queue = MailBox()
         self._user_queue = MailBox()
-        self._future_map = dict()
+        self._future_map: dict[str, asyncio.Future] = dict()
         self._monitors = set["Process"]()
         self._status = Process.Status.Stopped
 
@@ -72,6 +72,7 @@ class Process:
             print(
                 f"Exception in process {self.pid} - {e.__class__} - {'\n'.join(traceback.format_tb(e.__traceback__))}"
             )
+            # return await self.shutdown()
         finally:
             self._status = Process.Status.Stopped
 
@@ -95,7 +96,8 @@ class Process:
 
     async def send(self, message):
         if self._status == Process.Status.Running:
-            await self._mailbox.send(message)
+            return await self._mailbox.send(message)
+        raise Exception("Process is stopepd")
 
     def create_future(self, correlation_id):
         future = asyncio.Future()
@@ -118,12 +120,14 @@ class Process:
         self._task.cancel()
         if not self._task.cancelled():
             await self._task
+        for fut in self._future_map.values():
+            fut.set_exception(reason)
         self._mailbox.terminate()
         self._user_queue.terminate()
         self._status = Process.Status.Stopped
 
     async def shutdown(self, reason=None):
-        asyncio.create_task(self.notify_monitors(Process.Down(self.pid, reason)))
+        await self.notify_monitors(Process.Down(self.pid, reason))
         await self.exit(reason)
 
     async def notify_monitors(self, message):
@@ -134,4 +138,5 @@ class Process:
         print(f"Notifying monitors {self._monitors}")
         envelope = Envelope(self.pid, message)
         for mon in self._monitors:
+            print(f"sending to parent {mon}")
             await mon.send(envelope)
